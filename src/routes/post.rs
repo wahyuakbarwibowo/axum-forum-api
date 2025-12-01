@@ -4,5 +4,5 @@ use mongodb::Database;
 use crate::handlers::post::{create_post, get_posts};
 
 pub fn post_routes() -> Router<Database> {
-    Router::new().route("/posts", post(create_post).get(get_posts))
+    Router::new().route("/", post(create_post).get(get_posts))
 }

@@ -1,17 +1,15 @@
-
-
 use std::net::SocketAddr;
 
 use axum::Router;
 use dotenvy::dotenv;
 
-use crate::routes::post::post_routes;
+use crate::routes::api_routes;
 
+mod auth;
 mod db;
 mod handlers;
 mod models;
 mod routes;
-mod auth;
 
 #[tokio::main]
 async fn main() {
@@ -19,7 +17,7 @@ async fn main() {
 
     let db = db::connect().await;
 
-    let app = Router::new().merge(post_routes()).with_state(db);
+    let app = Router::new().nest("/api", api_routes()).with_state(db);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
     println!("Server berjalan di http://{}", addr);

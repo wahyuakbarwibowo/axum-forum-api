@@ -8,15 +8,12 @@ use bcrypt::{DEFAULT_COST, hash, verify};
 use jsonwebtoken::{EncodingKey, Header, encode};
 use mongodb::{
     Database,
-    bson::{DateTime, oid::ObjectId},
+    bson::{DateTime, doc, oid::ObjectId},
 };
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    auth::{
-        claims::{self, Claims},
-        extractor::AuthClaims,
-    },
+    auth::{claims::Claims, extractor::AuthClaims},
     models::user::User,
 };
 
@@ -155,5 +152,15 @@ pub async fn me(
     let oid = ObjectId::parse_str(&claims.sub)
         .map_err(|_| (StatusCode::BAD_REQUEST, "Invalid user id".to_string()))?;
 
-    let user 
+    let user = col
+        .find_one(doc! {"_id": oid})
+        .await
+        .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
+        .ok_or((StatusCode::NOT_FOUND, "User not found".to_string()))?;
+
+    Ok(Json(MeResponse {
+        id: user.id.unwrap().to_hex(),
+        username: user.username,
+        email: user.email,
+    }))
 }

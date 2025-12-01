@@ -1,6 +1,10 @@
 use std::env;
 
-use axum::{extract::FromRequestParts, http::StatusCode};
+use async_trait::async_trait;
+use axum::{
+    extract::FromRequestParts,
+    http::{StatusCode, request::Parts},
+};
 use jsonwebtoken::{DecodingKey, Validation, decode};
 
 use crate::auth::claims::Claims;
@@ -11,13 +15,11 @@ pub struct AuthClaims(pub Claims);
 impl<S> FromRequestParts<S> for AuthClaims
 where
     S: Send + Sync, // state not needed here
+    Self: Sized + 'static,
 {
     type Rejection = (StatusCode, String);
 
-    async fn from_request_parts(
-        parts: &mut axum::http::request::Parts,
-        state: &S,
-    ) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         // ambil header Authorization
         let auth_header = parts
             .headers
@@ -43,8 +45,7 @@ where
 
         let token = auth_header.trim_start_matches("Bearer ").trim();
 
-        let secret = env::var("JWT_SECRET")
-            .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "JWT_SECRET not set"))?;
+        let secret = env::var("JWT_SECRET").expect("JWT_SECRET must be set");
         let decoding_key = DecodingKey::from_secret(secret.as_ref());
 
         let token_data = decode::<Claims>(
