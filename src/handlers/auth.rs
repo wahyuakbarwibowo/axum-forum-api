@@ -73,7 +73,7 @@ pub async fn register(
         created_at: Some(DateTime::now()),
     };
 
-    col.insert_one(&new_user)
+    let _ = col.insert_one(&new_user)
         .await
         .map_err(|e| (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()));
 

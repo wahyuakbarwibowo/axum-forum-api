@@ -1,6 +1,5 @@
 use std::env;
 
-use async_trait::async_trait;
 use axum::{
     extract::FromRequestParts,
     http::{StatusCode, request::Parts},
@@ -11,15 +10,16 @@ use crate::auth::claims::Claims;
 
 pub struct AuthClaims(pub Claims);
 
-#[async_trait]
 impl<S> FromRequestParts<S> for AuthClaims
 where
-    S: Send + Sync, // state not needed here
-    Self: Sized + 'static,
+    S: Send + Sync,
 {
     type Rejection = (StatusCode, String);
 
-    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(
+        parts: &mut Parts,
+        _state: &S
+    ) -> Result<Self, Self::Rejection> {
         // ambil header Authorization
         let auth_header = parts
             .headers

@@ -1,10 +1,7 @@
-use axum::{Router, routing::Route};
+use axum::{Router, routing::post};
 use mongodb::Database;
 
-use crate::handlers::{
-    auth::{login, register},
-    post,
-};
+use crate::handlers::auth::{login, register};
 
 pub fn auth_routes() -> Router<Database> {
     Router::new()
